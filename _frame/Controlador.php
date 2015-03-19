@@ -28,12 +28,11 @@ abstract class Controlador{
 		$this->_metodo = $_SERVER['REQUEST_METHOD'];
 		if (!array_key_exists('HTTP_ORIGIN', $_SERVER)) {
     		$_SERVER['HTTP_ORIGIN'] = $_SERVER['SERVER_NAME'];
-    		$this->_origen = $_SERVER['HTTP_ORIGIN'];
+    		//$_token = this->_origen = $_SERVER['HTTP_ORIGIN'];
 		}
 
 		if(isset($_SERVER["HTTP_X_ACCESS_TOKEN"])) {
-			$this->_token = Framework::limpiarEntrada($_SERVER["HTTP_X_ACCESS_TOKEN"]);
-            Framework::validarToken($this->_token);
+            $this->_token = Framework::validarToken(Framework::limpiarEntrada($_SERVER["HTTP_X_ACCESS_TOKEN"]));
         }
 
        $this->_parseParams();
@@ -70,9 +69,9 @@ abstract class Controlador{
         $status = array(  
             200 => 'OK',
             401 => 'No tienes permiso',
-            404 => 'Not Found',   
-            405 => 'Method Not Allowed',
-            500 => 'Internal Server Error',
+            404 => 'No encontrado',   
+            405 => 'Metodo no permitido',
+            500 => 'Error interno',
         ); 
         return ($status[$code])?$status[$code]:$status[500]; 
     }
