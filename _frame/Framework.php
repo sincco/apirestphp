@@ -98,4 +98,28 @@ class Framework {
 		return "{$dia} {$mes} {$anio}";
 	}
 
+	public static function crearToken($datos, $horas = 3) {
+		$datos['exp'] = time($horas * 60 * 60);
+		$_json = json_encode($datos);
+		return self::Encrypt(json_encode(array("exp"=>time($horas * 60 * 60))));
+	}
+
+	public static function validarToken($token) {
+
+		static $errors = array(
+            JSON_ERROR_NONE             => null,
+            JSON_ERROR_DEPTH            => 'Maximum stack depth exceeded',
+            JSON_ERROR_STATE_MISMATCH   => 'Underflow or the modes mismatch',
+            JSON_ERROR_CTRL_CHAR        => 'Unexpected control character found',
+            JSON_ERROR_SYNTAX           => 'Syntax error, malformed JSON',
+            JSON_ERROR_UTF8             => 'Malformed UTF-8 characters, possibly incorrectly encoded'
+        );
+
+		echo self::Decrypt($token);
+		$_datos = json_decode(self::Decrypt($token), TRUE, 512, JSON_BIGINT_AS_STRING);
+		echo $errors[json_last_error()];
+		var_dump($_datos);exit();
+		//echo $_datos->{"exp"};
+	}
+
 }

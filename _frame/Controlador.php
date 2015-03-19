@@ -9,8 +9,7 @@ Rev:
 ************************************/
 abstract class Controlador{
 	protected $_modelo;
-	protected $_usuario;
-	protected $_password;
+    protected $_token;
 	protected $_origen;
 	protected $_metodo;
 	protected $_endpoint;
@@ -31,10 +30,11 @@ abstract class Controlador{
     		$_SERVER['HTTP_ORIGIN'] = $_SERVER['SERVER_NAME'];
     		$this->_origen = $_SERVER['HTTP_ORIGIN'];
 		}
-		if(isset($_SERVER["PHP_AUTH_USER"]))
-			$this->_usuario = $_SERVER["PHP_AUTH_USER"];
-		if(isset($_SERVER["PHP_AUTH_PW"]))
-			$this->_password = $_SERVER["PHP_AUTH_PW"];
+
+		if(isset($_SERVER["HTTP_X_ACCESS_TOKEN"])) {
+			$this->_token = Framework::limpiarEntrada($_SERVER["HTTP_X_ACCESS_TOKEN"]);
+            Framework::validarToken($this->_token);
+        }
 
        $this->_parseParams();
 	}

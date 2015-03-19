@@ -2,7 +2,7 @@
 class facturasModelo extends Modelo {
 	public function leer($id = '') {
 		if(strlen($id) > 0)
-			return $this->_db->query("SELECT * FROM factf01 WHERE CVE_DOC = :id;", array("id"=>$id));
+			return $this->_db->query("SELECT * FROM factf01 WHERE CVE_DOC = '$id';");
 		else
 			return $this->_db->query("SELECT * FROM factf01;");
 	}
