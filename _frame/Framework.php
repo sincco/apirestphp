@@ -104,13 +104,13 @@ class Framework {
 	}
 
 	public static function validarToken($token) {
-		$token = self::Decrypt($token);
-		parse_str(Framework::limpiarEntrada($token), $_datos);
-		if($_datos["exp"] > time()) {
-			return FALSE;
-		} else {
-			return $_datos;
-		}
+		// $token = self::Decrypt($token);
+		// parse_str(Framework::limpiarEntrada($token), $_datos);
+		// if($_datos["exp"] > time()) {
+		// 	return FALSE;
+		// } else {
+		// 	return $_datos;
+		// }
 	}
 
 }
