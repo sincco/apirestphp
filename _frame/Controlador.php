@@ -10,15 +10,14 @@ Rev:
 abstract class Controlador{
 	protected $_modelo;
     protected $_token;
-	protected $_origen;
 	protected $_metodo;
 	protected $_endpoint;
-	protected $_params;
+	protected $_parametros;
 #El API se contruye con salida JSON y, a menos que al crear la clase se indique lo contrario
 # se valida que el token calculado (en base al host que origina la peticion)
 # coincida con el que se entrega como uno de los parametros de entrada
 # para poder consumir cualquier operacion
-	public function __construct(){
+	public function __construct($ambito){
         #Si existe un modelo con el mismo nombre del controlador, este carga por default
         $this->_modelo = $this->cargaModelo(str_replace("Controlador", "", get_class($this)));
 
@@ -27,15 +26,24 @@ abstract class Controlador{
         header("Content-Type: application/json; charset=utf8");
 		$this->_metodo = $_SERVER['REQUEST_METHOD'];
 		if (!array_key_exists('HTTP_ORIGIN', $_SERVER)) {
-    		$_SERVER['HTTP_ORIGIN'] = $_SERVER['SERVER_NAME'];
-    		//$_token = this->_origen = $_SERVER['HTTP_ORIGIN'];
+    	   $_SERVER['HTTP_ORIGIN'] = $_SERVER['SERVER_NAME'];
 		}
-
-		if(isset($_SERVER["HTTP_X_ACCESS_TOKEN"])) {
+        #Cuando se recibe un token, se procesa y regresa el contenido
+        #o un FALSE en caso de que ya no sea un token válido
+        $this->_token = false;
+        if(isset($_SERVER["HTTP_X_ACCESS_TOKEN"])) {
             $this->_token = Framework::validarToken(Framework::limpiarEntrada($_SERVER["HTTP_X_ACCESS_TOKEN"]));
         }
 
-       $this->_parseParams();
+        ##Estando en el ambito privado, debe existir un token valido de autenticación
+        if($ambito == SCOPE_PRIVATE && !$this->_token) {
+            throw new SecurityException("Debes enviar un token valido para realizar esta operacion");
+        }
+        if(!lib_seguridad::index($this->_token["datos"])) {
+            throw new SecurityException("No tienes permiso para realizar esta operacion");   
+        }
+
+       $this->_parseaParametros();
 	}
 
 	#Cargar cualquier modelo necesario en nuestras operaciones
@@ -52,9 +60,9 @@ abstract class Controlador{
 	}
 
 	protected function validaToken() {
-		if(!array_key_exists('_token', $this->_params)) {
+		if(!array_key_exists('_token', $this->_parametros)) {
         	$this->respuesta('', 401);
-        }elseif($this->_params['_token'] != $this->_token_calculado) {
+        }elseif($this->_parametros['_token'] != $this->_token_calculado) {
         	$this->respuesta('', 401);
         }
         exit();
@@ -76,42 +84,40 @@ abstract class Controlador{
         return ($status[$code])?$status[$code]:$status[500]; 
     }
 
-    private function _generaToken() {
-    	$this->_token_calculado = Framework::Encrypt($this->_origen);
-    }
-
-
-    private function _parseParams() {
-        $parameters = array();
+    private function _parseaParametros() {
+        $_parametros = array();
  
-        // first of all, pull the GET vars
         if (isset($_SERVER['QUERY_STRING'])) {
-            parse_str(Framework::limpiarEntrada($_SERVER['QUERY_STRING']), $parameters);
+            parse_str($_SERVER['QUERY_STRING'], $_parametros);
         }
  
-        // now how about PUT/POST bodies? These override what we got from GET
-        $body = file_get_contents("php://input");
-        $content_type = false;
+        //Lo que se ha recibido por POST, GET
+        $_contenido = file_get_contents("php://input");
+        $_contenido_tipo = false;
         if(isset($_SERVER['CONTENT_TYPE'])) {
-            $content_type = $_SERVER['CONTENT_TYPE'];
+            $_contenido_tipo = $_SERVER['CONTENT_TYPE'];
         }
-        $parameters["content"] = $content_type;
-        switch($content_type) {
+        switch($_contenido_tipo) {
             case "application/json":
-                $parameters = json_decode($body, TRUE);
-                $this->format = "json";
+                $_parametros = json_decode($_contenido, TRUE);
+                $this->_formato = "json";
                 break;
             case "application/x-www-form-urlencoded":
-                parse_str($body, $postvars);
+                parse_str($_contenido, $postvars);
                 foreach($postvars as $field => $value) {
-                    $parameters[$field] = $this->_cleanInputs($value);
+                    $_parametros[$field] = Framework::limpiarEntrada($value);
                 }
                 $this->format = "html";
                 break;
             default:
-                // we could parse other supported formats here
+                parse_str($_contenido, $postvars);
+                foreach($postvars as $field => $value) {
+                    $_parametros[$field] = Framework::limpiarEntrada($value);
+                }
+                $this->format = "html";
+                #$this->respuesta("Esta API funciona sobre una plataforma de contenidos JSON", 500);
                 break;
         }
-        $this->_params = $parameters;
+        $this->_parametros = $_parametros;
     }
 }

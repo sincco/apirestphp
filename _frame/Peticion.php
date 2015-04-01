@@ -1,5 +1,14 @@
 <?php
+/************************************
+* Manejo de peticiones en el framework
+*************************************
+*************************************
+Rev:
+*************************************
+@ivanmiranda: 1.0
+************************************/
 	class Peticion{
+		private $_ambito;
 		private $_controlador;
 		private $_metodo;
 		private $_argumentos;
@@ -13,10 +22,16 @@
 				$url = explode('/', $url);
 				$url = array_filter($url);
 			#Convertir la URL a nombres de objetos del sistema
+				$this->_ambito = strtolower(array_shift($url)); #publico | privado
 				$this->_controlador = strtolower(array_shift($url));
 				$this->_metodo = strtolower(array_shift($url));
 				$this->_argumentos = $url;
 			}
+			#Limpiar parametros recibidos
+			$this->_argumentos = Framework::limpiarEntrada($this->_argumentos);
+			$_POST = Framework::limpiarEntrada($_POST);
+			$_GET = Framework::limpiarEntrada($_GET);
+			$_SERVER['QUERY_STRING'] = Framework::limpiarEntrada($_SERVER['QUERY_STRING']);
 			#Inicializar los atributos no recibidos en la URL
 			if(!$this->_controlador)
 				$this->_controlador = DEFAULT_CONTROLLER;
@@ -37,5 +52,8 @@
 		}
 		public function getMetodoHTTP() {
 			return $this->_metodoHTTP;
+		}
+		public function getAmbito() {
+			return $this->_ambito;
 		}
 	}

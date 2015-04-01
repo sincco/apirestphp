@@ -34,5 +34,3 @@ function __autoload($class_name) {
 	  	throw new FrameworkException("No se pudo encontrar la clase {$class_name}");
   }
 }
-#La clase de seguridad para toda la aplicación
-$__seguridad = Framework::Carga_Seguridad();

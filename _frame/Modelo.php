@@ -1,5 +1,15 @@
 <?php
-#Clase generica de Modelo, cualquier instancia derivada se conecta automaticamente a la BD
+/************************************
+* Base para modelos utilizados en la
+* APP
+* Cualquier modelo se conecta a una
+* BD
+*************************************
+*************************************
+Rev:
+*************************************
+@ivanmiranda: 1.0
+************************************/
 abstract class Modelo{
 	protected $_db;
 	protected $_campos = array();

@@ -1,6 +1,6 @@
 <?php
 #/////////////////////////////////
-# Configuración de la aplicación
+# Configuración de la API
 #/////////////////////////////////
 
 #-----------------------
@@ -12,7 +12,7 @@ define('APP_COMPANY', 'sincco.com');
 define('APP_KEY', '1628387158543db8f067f578.01851196'); #llave de encripcion de datos
 
 #------------------------
-#Conexion a DB de la APP
+#Conexion a DB de la aPI
 #------------------------
 define('DB_HOST', '');
 define('DB_USER', 'SYSDBA');
@@ -22,13 +22,11 @@ define('DB_CHAR', 'utf8');
 define('DB_MANAGER', 'firebird');
 
 #------------------------------
-#Manejo de seguridad en la APP
+#Manejo de seguridad en la API
 #------------------------------
-define('SECURITY_ACTIVE', FALSE); #Define si se activa el control de seguridad en la APP
-define('SECURITY_CLASS', 'lib_seguridad'); 	#La clase que valida la seguridad de acceso, se extiende de Seguridad
-											#...y debe estar alojada en _libs
-											#Debe tener, por definicion un metodo llamado Validar_Acceso 
-											#y otro Error_Seguridad
+define('SCOPE_PRIVATE', 'privado'); #Define la ruta para la sección privada
+														#se debe usar una ruta distinta al valor aqui definido para estar en
+														#la sección pública
 
 #/////////////////////////////////
 # Configuración del framework
