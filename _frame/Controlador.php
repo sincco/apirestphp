@@ -21,13 +21,18 @@ abstract class Controlador{
         #Si existe un modelo con el mismo nombre del controlador, este carga por default
         $this->_modelo = $this->cargaModelo(str_replace("Controlador", "", get_class($this)));
 
-		header("Access-Control-Allow-Orgin: *");
+		header("Access-Control-Allow-Origin: *");
         header("Access-Control-Allow-Methods: *");
+        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, x-access-token");
         header("Content-Type: application/json; charset=utf8");
 		$this->_metodo = $_SERVER['REQUEST_METHOD'];
 		if (!array_key_exists('HTTP_ORIGIN', $_SERVER)) {
     	   $_SERVER['HTTP_ORIGIN'] = $_SERVER['SERVER_NAME'];
 		}
+        if($this->_metodo == "OPTIONS") {
+            $this->respuesta("OPTIONS");
+            exit;
+        }
         #Cuando se recibe un token, se procesa y regresa el contenido
         #o un FALSE en caso de que ya no sea un token válido
         $this->_token = false;
