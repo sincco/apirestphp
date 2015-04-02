@@ -1,12 +1,17 @@
 <?php
-/*******************************
-Funciones comúnes del framework
-*******************************/
+/************************************
+* Funciones comunes en el Framework
+*************************************
+*************************************
+Rev:
+*************************************
+@ivanmiranda: 1.0
+************************************/
 class Framework {
 #------------------------------------
 #Cargar un modelo
 #------------------------------------
-	public static function CargaModelo($modelo) {
+	public static function cargaModelo($modelo) {
 		$rutaModelo = APP_PATH.'_modelos/'.$modelo.'.php';
 		$modelo = $modelo.'Modelo';
 		if(is_readable($rutaModelo)) {
@@ -24,32 +29,7 @@ class Framework {
 		return implode(", ", $res);
 	}
 
-	public static function Carga_Seguridad() {
-		#Si la seguridad esta activa en la configuración...
-		if(SECURITY_ACTIVE) {
-			$clase_seguridad = SECURITY_CLASS;
-			require_once './_libs/'.$clase_seguridad.'.php';
-			return @ new $clase_seguridad; #...se crea en base a la clase definida
-		}
-		else {
-			return null;
-		}
-	}
-
-	public static function limpiarEntrada($contenido){
-		if(is_array($contenido))
-			foreach ($contenido as $key => $value) {
-				$value = trim(strip_tags($value));
-				$contenido[$key] = filter_var($value,FILTER_SANITIZE_STRING);
-			}
-		else {
-			$contenido = trim(strip_tags($contenido));
-			$contenido = filter_var($contenido,FILTER_SANITIZE_STRING);
-		}
-		return $contenido;
-	}
-
-	public static function ParseaUTF8($contenido){
+	public static function parseaUTF8($contenido){
 		if(is_array($contenido))
 			foreach ($contenido as $key => $value)
 				$contenido[$key] = utf8_decode($value);
@@ -57,10 +37,31 @@ class Framework {
 			$contenido = utf8_decode($contenido);
 		return $contenido;
 	}
+
+	public static function limpiarEntrada($valor) {
+	  $_busquedas = array(
+	    '@<script[^>]*?>.*?</script>@si',   #Quitar javascript
+	    '@<[\/\!]*?[^<>]*?>@si',            #Quitar html
+	    '@<style[^>]*?>.*?</style>@siU',    #Quitar css
+	    '@<![\s\S]*?--[ \t\n\r]*>@'         #Quitar comentarios multilinea
+	  );
+	  if (is_array($valor)) {
+	  	foreach ($valor as $_key => $_value) {
+	  		$valor[$_key] = Framework::limpiarEntrada($_value); #Recursivo para arreglos
+	  	}	  	
+	  }else {
+	    $valor = preg_replace($_busquedas, '', $valor);
+	    $valor = filter_var($valor,FILTER_SANITIZE_STRING);
+	    if (get_magic_quotes_gpc()) {
+				$valor = stripslashes($valor);
+			}
+		}
+		return $valor;
+	}
 #------------------
 #Encripcion AES256
 #------------------
-	public static function Encrypt($data, $key = APP_KEY) {
+	public static function encrypt($data, $key = APP_KEY) {
 		$salt = 'cH!swe!retReGu7W6bEDRup7usuDUh9THeD2CHeGE*ewr4n39=E@rAsp7c-Ph@pH';
 		$key = substr(hash('sha256', $salt.$key.$salt), 0, 32);
 		$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);
@@ -68,7 +69,7 @@ class Framework {
 		$encrypted = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $data, MCRYPT_MODE_ECB, $iv));
 		return $encrypted;
 	}
-	public static function Decrypt($data, $key = APP_KEY) {
+	public static function decrypt($data, $key = APP_KEY) {
 		$salt = 'cH!swe!retReGu7W6bEDRup7usuDUh9THeD2CHeGE*ewr4n39=E@rAsp7c-Ph@pH';
 		$key = substr(hash('sha256', $salt.$key.$salt), 0, 32);
 		$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);
@@ -79,7 +80,7 @@ class Framework {
 #------------------------------------
 #Traducir fecha al español
 #------------------------------------
-	public static function FechaEsp($fecha) {
+	public static function fechaEsp($fecha) {
 		$anio = date("y", $fecha);
 		$dia = date("j", $fecha);
 		$mes=date("F", $fecha);
@@ -106,10 +107,14 @@ class Framework {
 	public static function validarToken($token) {
 		$token = self::Decrypt($token);
 		parse_str(Framework::limpiarEntrada($token), $_datos);
-		if($_datos["exp"] > time()) {
-			return FALSE;
+		if(isset($_datos["exp"])) {
+			if($_datos["exp"] > time()) {
+				return FALSE;
+			} else {
+				return $_datos;
+			}
 		} else {
-			return $_datos;
+			return FALSE;
 		}
 	}
 
