@@ -32,7 +32,7 @@ class Framework {
 	public static function parseaUTF8($contenido){
 		if(is_array($contenido))
 			foreach ($contenido as $key => $value)
-				$contenido[$key] = utf8_decode($value);
+				$contenido[$key] = Framework::parseaUTF8($value);
 		else
 			$contenido = utf8_decode($contenido);
 		return $contenido;

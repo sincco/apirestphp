@@ -75,7 +75,7 @@ abstract class Controlador{
 
 	protected function respuesta($data, $status = 200) {
 		header("HTTP/1.1 " . $status . " " . $this->_requestStatus($status));
-		echo json_encode($data);
+		echo json_encode(Framework::parseaUTF8($data));
 	}
 
     private function _requestStatus($code) {
