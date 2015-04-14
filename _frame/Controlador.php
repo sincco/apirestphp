@@ -42,10 +42,12 @@ abstract class Controlador{
 
         ##Estando en el ambito privado, debe existir un token valido de autenticación
         if($ambito == SCOPE_PRIVATE && !$this->_token) {
+            #echo "Debes enviar un token valido para realizar esta operacion";
             throw new SecurityException("Debes enviar un token valido para realizar esta operacion");
         }
         if($ambito == SCOPE_PRIVATE && !lib_seguridad::index($this->_token["datos"])) {
-            throw new SecurityException("No tienes permiso para realizar esta operacion");   
+            #echo "No tienes permiso para realizar esta operacion";
+            throw new SecurityException("No tienes permiso para realizar esta operacion");
         }
 
        $this->_parseaParametros();

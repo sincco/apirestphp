@@ -116,4 +116,20 @@ Rev:
             return $resultado;
         }
     }
+     #Ejecucion de INSERT RAW
+    public function insertRAW($consulta) {
+        $resultado = false;
+        if($statement = self::$PDOInstance->prepare($consulta)) {
+            try {
+                if (!$statement->execute())
+                    throw new PDOException("[SQLSTATE] ".$statement->errorInfo()[2],$statement->errorInfo()[1]);
+                $resultado = self::$PDOInstance->lastInsertId();
+            }
+            catch(PDOException $e) {
+                Logs::procesa($e);
+                return false;
+            }
+            return $resultado;
+        }
+    }
 }

@@ -9,16 +9,9 @@ Rev:
 ************************************/
 class Logs {
 	public static function procesa($e){
-		if(DEV_SHOWERRORS){
-			if(stripos($e->getMessage(), "SQLSTATE") > -1)
-				Logs::pantalla_bd($e);
-			else
-				Logs::pantalla($e);
-		} else {
-			header("Location: ".ERROR_404);
-		}
 		if(DEV_LOG)
 			Logs::escribe($e);
+		Logs::pantalla($e);
 	}
 	private static function escribe($e){
 		if(!file_exists(DEV_LOGFILE))
@@ -33,16 +26,8 @@ class Logs {
 		fclose($log_file);
 	}
 	private static function pantalla($e){
-		echo "<html><head><style>h1{font-family:Arial, Helvetica, sans-serif; font-size:16px;} body{font-family:Courier; font-size:12px;}</style></head>";
-		echo "<h1>".$e->getMessage()."(".$e->getCode().")</h1>";
-		echo "<hr/>apirestPHP - ".APP_NAME." - ".APP_COMPANY;
-		echo "</html>";
-	}
-	private static function pantallaBD($e){
-		echo "<html><head><style>h1{font-family:Arial, Helvetica, sans-serif; font-size:16px;} body{font-family:Courier; font-size:12px;}</style></head>";
-		echo "<h1>".$e->getMessage()."(".$e->getCode().")</h1>";
-		echo $e->getFile()."::".$e->getLine()."<hr/>";
-		echo "<hr/>apirestPHP - ".APP_NAME." - ".APP_COMPANY;
-		echo "</html>";
+		header("HTTP/1.1 500 ".$e->getMessage());
+		echo json_encode(array("Mensaje"=>$e->getMessage(),"status"=>500));
+		die;
 	}
 }
