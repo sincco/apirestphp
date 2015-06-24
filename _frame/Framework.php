@@ -104,6 +104,9 @@ class Framework {
 		return self::Encrypt(http_build_query($datos));
 	}
 
+#------------------------------------
+#Manejo de tokens en API
+#------------------------------------
 	public static function validarToken($token) {
 		$token = self::Decrypt($token);
 		parse_str(Framework::limpiarEntrada($token), $_datos);
@@ -117,5 +120,34 @@ class Framework {
 			return FALSE;
 		}
 	}
+	
+#------------------------------------
+#Conexion y manejo de BD
+#------------------------------------
+	public static function conectaBD ($DB_MANAGER, $DB_HOST, $DB_NAME, $DB_USER, $DB_PASS) {
+		return new PDO($DB_MANAGER.":host=".$DB_HOST.";dbname=".$DB_NAME, $DB_USER, $DB_PASS);
+	}
 
+	#Ejecucion de querys, con soporte para pase de parametros en un arreglo
+	public static function query($conexion, $consulta, $valores = array()) {
+		$resultado = false;
+		if($statement = $conexion->prepare($consulta)) {
+			if(preg_match_all("/(:\w+)/", $consulta, $campo, PREG_PATTERN_ORDER)) {
+				$campo = array_pop($campo);
+				foreach($campo as $parametro){
+					$statement->bindValue($parametro, $valores[substr($parametro,1)]);
+				}
+			}
+			try {
+				if (!$statement->execute())
+				throw new PDOException("[SQLSTATE] ".$statement->errorInfo()[2],$statement->errorInfo()[1]);
+				$resultado = $statement->fetchAll(PDO::FETCH_ASSOC);
+				$statement->closeCursor();
+			}
+			catch(PDOException $e) {
+				return false;
+			}
+			return $resultado;
+		}
+	}
 }
