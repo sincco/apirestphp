@@ -6,6 +6,8 @@
 Rev:
 *************************************
 @ivanmiranda: 1.0
+@ivanmiranda: 1.1
+	- Conexion y manejo de bases de datos
 ************************************/
 class Framework {
 #------------------------------------
