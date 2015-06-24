@@ -6,6 +6,8 @@
 Rev:
 *************************************
 @ivanmiranda: 1.0
+@ivanmiranda: 1.5
+    Soporte para BD firebird
 ************************************/
  class BaseDatos {  
     static private $PDOInstance; 
@@ -18,12 +20,27 @@ Rev:
                     $parametros = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '. DB_CHAR);
                 else
                     $parametros = array();
-                if(DB_MANAGER == "sqlsrv")
-    			   self::$PDOInstance = new PDO(DB_MANAGER.":Server=".DB_HOST.";",
+                switch (DB_MANAGER) {
+                    case 'sqlsrv':
+                        self::$PDOInstance = new PDO(DB_MANAGER.":Server=".DB_HOST.";",
                             DB_USER, DB_PASS, $parametros);
-                else
-                    self::$PDOInstance = new PDO(DB_MANAGER.":host=".DB_HOST.";dbname=".DB_NAME,
+                        break;
+                    case 'mysql':
+                        self::$PDOInstance = new PDO(DB_MANAGER.":host=".DB_HOST.";dbname=".DB_NAME,
                             DB_USER, DB_PASS, $parametros);
+                        break;
+                    case 'firebird':
+                        $parametros = array(
+                            PDO::FB_ATTR_TIMESTAMP_FORMAT,"%d-%m-%Y",
+                            PDO::FB_ATTR_DATE_FORMAT ,"%d-%m-%Y"
+                        );
+                        self::$PDOInstance = new PDO(DB_MANAGER.":dbname=".DB_HOST.DB_NAME, DB_USER, DB_PASS, $parametros);
+                        break;
+                    default:
+                        self::$PDOInstance = new PDO(DB_MANAGER.":host=".DB_HOST.";dbname=".DB_NAME,
+                            DB_USER, DB_PASS);
+                        break;
+                }
 			} catch (PDOException $e) { 
 				Logs::procesa($e);
 			}
@@ -104,22 +121,6 @@ Rev:
                     $statement->bindValue($parametro, $valores[substr($parametro,1)]);
                 }
             }
-            try {
-                if (!$statement->execute())
-                    throw new PDOException("[SQLSTATE] ".$statement->errorInfo()[2],$statement->errorInfo()[1]);
-                $resultado = self::$PDOInstance->lastInsertId();
-            }
-            catch(PDOException $e) {
-                Logs::procesa($e);
-                return false;
-            }
-            return $resultado;
-        }
-    }
-     #Ejecucion de INSERT RAW
-    public function insertRAW($consulta) {
-        $resultado = false;
-        if($statement = self::$PDOInstance->prepare($consulta)) {
             try {
                 if (!$statement->execute())
                     throw new PDOException("[SQLSTATE] ".$statement->errorInfo()[2],$statement->errorInfo()[1]);
